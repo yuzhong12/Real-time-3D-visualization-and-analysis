@@ -66,8 +66,15 @@ Widget::Widget(QWidget *parent)
 }
 // 析构函数
 Widget::~Widget() {
+    if (viewer) {
+        viewer->removeAllPointClouds();
+        viewer->removeAllShapes();
+    }
+    ui->openGLWidget->GetRenderWindow()->Finalize();
+    ui->openGLWidget->GetRenderWindow()->Delete();
     delete ui;
 }
+
 
 // 槽函数：加载 PLY 点云文件
 void Widget::onLoadPlyclicked()
@@ -100,6 +107,7 @@ void Widget::onLoadPlyclicked()
     num_chunks = (total_points + chunkSize - 1) / chunkSize; // 计算需要分多少块
     std::cout << "The number of chunk pointclouds is num_chunks : " << num_chunks << std::endl;
     viewer->removeAllPointClouds();
+    viewer->removeAllShapes();
     current_chunk = 0;
     while (current_chunk < num_chunks) {
         int startIdx = current_chunk * chunkSize;
@@ -147,7 +155,7 @@ void Widget::onLoadMeshclicked() {
         std::cerr << "Could not load mesh file: " << fileName.toStdString() << std::endl;
         return;
     }
-
+    viewer->removeAllPointClouds();
     viewer->removeAllShapes();
     viewer->addPolygonMesh(*mesh, "mesh");
     viewer->resetCamera();
